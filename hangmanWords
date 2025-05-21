@@ -1,0 +1,116 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+public class WordBank {
+    private List<String> hardwords;
+    private List<String> medwords;
+    private List<String> easywords;
+    private List<Character> letters;
+    private String key;
+
+    public WordBank(List<String> hard, List<String> med, List<String> easy) {
+        this.hardwords = new ArrayList<>(hard);
+        this.medwords = new ArrayList<>(med);
+        this.easywords = new ArrayList<>(easy);
+        this.letters = new ArrayList<>();
+        this.key = "hangman";
+    }
+
+    public void addWord(String difficulty, String word) {
+        switch (difficulty) {
+            case "Hard":
+                hardwords.add(word);
+                break;
+            case "Medium":
+                medwords.add(word);
+                break;
+            case "Easy":
+                easywords.add(word);
+                break;
+        }
+    }
+
+    public String chooseWord(String difficulty) {
+        Random rand = new Random();
+        switch (difficulty) {
+            case "Hard":
+                return hardwords.get(rand.nextInt(hardwords.size()));
+            case "Medium":
+                return medwords.get(rand.nextInt(medwords.size()));
+            case "Easy":
+                return easywords.get(rand.nextInt(easywords.size()));
+            default:
+                return "";
+        }
+    }
+
+    public void removeWord(String difficulty, String toRemove) {
+        switch (difficulty) {
+            case "Hard":
+                hardwords.remove(toRemove);
+                break;
+            case "Medium":
+                medwords.remove(toRemove);
+                break;
+            case "Easy":
+                easywords.remove(toRemove);
+                break;
+        }
+    }
+
+    public String getWords(String difficulty) {
+        StringBuilder list = new StringBuilder();
+        List<String> targetList;
+
+        switch (difficulty) {
+            case "Hard":
+                targetList = hardwords;
+                break;
+            case "Medium":
+                targetList = medwords;
+                break;
+            case "Easy":
+                targetList = easywords;
+                break;
+            default:
+                return "";
+        }
+
+        for (int i = 0; i < targetList.size(); i++) {
+            list.append(i).append(". ").append(targetList.get(i)).append("\n");
+        }
+        return list.toString();
+    }
+
+    public void setLetters(String word) {
+        letters.clear();
+        for (char c : word.toCharArray()) {
+            letters.add(c);
+        }
+    }
+
+    public void clearLetters() {
+        letters.clear();
+    }
+
+    public int getLength() {
+        return letters.size();
+    }
+
+    public boolean checkLetter(char check) {
+        return letters.contains(check);
+    }
+
+    public String numToString(int num) {
+        return Integer.toString(num);
+    }
+
+    public boolean checkKey(String password) {
+        return password.equals(key);
+    }
+
+    public void changeKey(String nKey) {
+        this.key = nKey;
+    }
+}
