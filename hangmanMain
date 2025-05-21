@@ -1,0 +1,162 @@
+import javafx.application.Application;
+import javafx.animation.AnimationTimer;
+import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.stage.Stage;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.*;
+
+public class HangmanGame extends Application {
+
+    private WordBank wordBank;
+    private String difficulty = "";
+    private String word = "";
+    private String hidden = "";
+    private int attempts = 6;
+    private boolean wordGuessed = false;
+
+    private Label titleLabel = new Label("Hangman Game");
+    private Label optionsLabel = new Label("Click to start game");
+    private Label gameLabel = new Label("");
+
+    private List<Image> hangmanStages = new ArrayList<>();
+    private Image background;
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    @Override
+    public void start(Stage stage) {
+        Pane root = new Pane();
+        Scene scene = new Scene(root, 1000, 800);
+
+        loadAssets();
+        setupUI(root);
+        initializeWordBank();
+
+        stage.setScene(scene);
+        stage.setTitle("Hangman Game");
+        stage.show();
+
+        scene.setOnKeyTyped(e -> {
+            if (word.isEmpty()) return;
+            if (wordGuessed || attempts <= 0) return;
+
+            char guessedLetter = e.getCharacter().toLowerCase().charAt(0);
+            if (!Character.isLetter(guessedLetter)) return;
+
+            boolean found = false;
+            StringBuilder newHidden = new StringBuilder(hidden);
+            for (int i = 0; i < word.length(); i++) {
+                if (word.charAt(i) == guessedLetter) {
+                    newHidden.setCharAt(i, guessedLetter);
+                    found = true;
+                }
+            }
+
+            if (!found) attempts--;
+            hidden = newHidden.toString();
+            updateGameLabel();
+
+            if (hidden.equals(word)) {
+                wordGuessed = true;
+                titleLabel.setText("YOU WON!");
+            } else if (attempts == 0) {
+                titleLabel.setText("GAME OVER. Word was: " + word);
+            }
+        });
+
+        scene.setOnMouseClicked(e -> {
+            startNewGame();
+        });
+    }
+
+    private void setupUI(Pane root) {
+        Canvas canvas = new Canvas(1000, 800);
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        root.getChildren().add(canvas);
+
+        titleLabel.setFont(new Font("Arial", 36));
+        titleLabel.setLayoutX(350);
+        titleLabel.setLayoutY(50);
+
+        optionsLabel.setFont(new Font("Arial", 20));
+        optionsLabel.setLayoutX(380);
+        optionsLabel.setLayoutY(120);
+
+        gameLabel.setFont(new Font("Courier New", 30));
+        gameLabel.setTextFill(Color.DARKBLUE);
+        gameLabel.setLayoutX(100);
+        gameLabel.setLayoutY(700);
+
+        root.getChildren().addAll(titleLabel, optionsLabel, gameLabel);
+
+        new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                gc.clearRect(0, 0, 1000, 800);
+                gc.drawImage(background, 0, 0);
+                int stage = 6 - attempts;
+                if (stage > 0 && stage <= hangmanStages.size()) {
+                    gc.drawImage(hangmanStages.get(stage - 1), 400, 300, 150, 200);
+                }
+            }
+        }.start();
+    }
+
+    private void updateGameLabel() {
+        gameLabel.setText("Word: " + hidden + "    Attempts Left: " + attempts);
+    }
+
+    private void startNewGame() {
+        difficulty = "Easy"; // or let player choose
+        word = wordBank.chooseWord(difficulty).toLowerCase();
+        hidden = "_".repeat(word.length());
+        attempts = 6;
+        wordGuessed = false;
+
+        titleLabel.setText("Guess the word!");
+        updateGameLabel();
+    }
+
+    private void loadAssets() {
+        try {
+            background = new Image(new File("MENUPLAIN.png").toURI().toString());
+            for (int i = 1; i <= 6; i++) {
+                hangmanStages.add(new Image(new File("fig" + i + ".png").toURI().toString()));
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading images. Ensure they exist in the project folder.");
+        }
+    }
+
+    private void initializeWordBank() {
+        List<String> easy = new ArrayList<>();
+        List<String> med = new ArrayList<>();
+        List<String> hard = new ArrayList<>();
+
+        try (Scanner scanner = new Scanner(new File("words.txt"))) {
+            int index = 0;
+            while (scanner.hasNextLine()) {
+                String w = scanner.nextLine();
+                if (index <= 32) easy.add(w);
+                else if (index <= 66) med.add(w);
+                else hard.add(w);
+                index++;
+            }
+        } catch (FileNotFoundException e) {
+            System.err.println("words.txt not found.");
+        }
+
+        wordBank = new WordBank(hard, med, easy);
+    }
+}
