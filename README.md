@@ -18,11 +18,11 @@ This project is a graphical **Hangman Game** created using **JavaFX**. It featur
 
 ## 📁 Folder Structure
 HangmanGame/
-├── hangmanMain.java # Main JavaFX application (UI + logic)
-├── hangmanWords.java # Handles word storage, guessing logic, and password check
-├── SparkyStones.ttf # Font file
-├── words.txt # External word list categorized by difficulty
-├── README.md # Project documentation (this file)
+├── hangmanMain.java       # Main JavaFX application (UI + logic)
+├── hangmanWords.java      # Handles word storage, guessing logic, and password check
+├── SparkyStones.ttf       # Font file
+├── words.txt              # External word list categorized by difficulty
+├── README.md              # Project documentation (this file)
 
 ---
 
